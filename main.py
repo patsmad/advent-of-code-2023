@@ -16,22 +16,16 @@ def run_day(day: int, test: bool) -> None:
         else:
             subprocess.check_call(['python', f'day_{day}.py', f'--test'])
     else:
-        print(f'Day {day} does not exist')
+        print(f'Day {day} does not exist. Generating skeleton')
+        generate_day(day)
 
 def run() -> None:
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
-    parser.add_argument('--generate', action='store_true')
     parser.add_argument('--day', required=True, type=int)
     parser.add_argument('--test', action='store_true')
     args: argparse.Namespace = parser.parse_args()
 
-    if args.generate:
-        if not day_exists(args.day):
-            generate_day(args.day)
-        else:
-            print(f'Day {args.day} already exists')
-    else:
-        run_day(args.day, args.test)
+    run_day(args.day, args.test)
 
 
 if __name__ == '__main__':
