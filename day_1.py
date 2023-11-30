@@ -1,15 +1,27 @@
+import argparse
 from get_input import get_input
+import re
 
-day_num = 1
-raw_input = get_input(day_num)
+def day_num() -> int:
+    return int(re.search('.*day_([0-9]*)\.py', __file__).group(1))
 
-test_input = """
+day: int = day_num()
 
-""".strip()
+def run(test: bool) -> None:
+    if not test:
+        raw_input: str = get_input(day)
+    else:
+        raw_input: str = """
+        
+        """.strip()
 
-input = test_input
-
-# part 1
+    # part 1
 
 
-# part 2
+    # part 2
+
+if __name__ == '__main__':
+    parser: argparse.ArgumentParser = argparse.ArgumentParser()
+    parser.add_argument('--test', action='store_true')
+    args: argparse.Namespace = parser.parse_args()
+    run(args.test)
