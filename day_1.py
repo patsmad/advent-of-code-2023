@@ -43,6 +43,8 @@ def run(test: bool) -> None:
             a1b2c3d4e5f
             treb7uchet
         """.strip()
+    print(len(raw_input.split('\n')))
+    print(sum([len(a) for a in raw_input.split('\n')]) / len(raw_input.split('\n')))
 
     # part 1
     print(sum(map(to_num, part_1_format(raw_input))))
