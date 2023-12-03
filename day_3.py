@@ -18,8 +18,8 @@ class Symbol:
     def numbers(self, numbers: list[Number]) -> list[Number]:
         return [n for n in numbers if abs(self.x - n.x) < 2 and self.y + 1 >= n.y_start and self.y - 1 <= n.y_end]
 
-    def gear_ratio(self, numbers):
-        filtered_numbers = self.numbers(numbers)
+    def gear_ratio(self, numbers: list[Number]) -> int:
+        filtered_numbers: list[Number] = self.numbers(numbers)
         return (self.value == '*' and len(filtered_numbers) == 2 and filtered_numbers[0].value * filtered_numbers[1].value) or 0
 
 class Number:
@@ -38,10 +38,10 @@ class Number:
 class Grid:
     def __init__(self, raw_input):
         lines = [line.strip() for line in raw_input.strip().split('\n')]
-        self.numbers = []
-        self.symbols = []
+        self.numbers: list[Number] = []
+        self.symbols: list[Symbol] = []
         for i, line in enumerate(lines):
-            curr_num = []
+            curr_num: list[str] = []
             for j, c in enumerate(line):
                 if re.match('[^0-9.]', c):
                     self.symbols.append(Symbol(c, i, j))
@@ -53,10 +53,10 @@ class Grid:
             if len(curr_num) > 0:
                 self.numbers.append(Number(int(''.join(curr_num)), i, len(line) - len(curr_num), len(line) - 1))
 
-    def engines(self):
+    def engines(self) -> int:
         return sum([number.engine(self.symbols) for number in self.numbers])
 
-    def gear_ratio(self):
+    def gear_ratio(self) -> int:
         return sum([symbol.gear_ratio(self.numbers) for symbol in self.symbols])
 
 def run(test: bool) -> None:
@@ -76,7 +76,7 @@ def run(test: bool) -> None:
             .664.598..
         """.strip()
 
-    g = Grid(raw_input)
+    g: Grid = Grid(raw_input)
 
     # part 1
     print(g.engines())
