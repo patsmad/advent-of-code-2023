@@ -43,13 +43,14 @@ class Grid:
         for i, line in enumerate(lines):
             curr_num: list[str] = []
             for j, c in enumerate(line):
-                if re.match('[^0-9.]', c):
-                    self.symbols.append(Symbol(c, i, j))
                 if re.match('[0-9]', c):
                     curr_num.append(c)
-                elif re.match('[^0-9]', c) and len(curr_num) > 0:
-                    self.numbers.append(Number(int(''.join(curr_num)), i, j - len(curr_num), j - 1))
-                    curr_num = []
+                else:
+                    if c != '.':
+                        self.symbols.append(Symbol(c, i, j))
+                    if len(curr_num) > 0:
+                        self.numbers.append(Number(int(''.join(curr_num)), i, j - len(curr_num), j - 1))
+                        curr_num = []
             if len(curr_num) > 0:
                 self.numbers.append(Number(int(''.join(curr_num)), i, len(line) - len(curr_num), len(line) - 1))
 
