@@ -21,28 +21,31 @@ def format(raw_input: str):
     maps = map(format_map, split_input[1:])
     return seeds, list(maps)
 
-def get_new_sources(source: (int, int), maps: list[(int, int, int)]) -> list[(int, int)]:
-    idxs = sorted(list(set([source[0], source[0] + source[1]] + [m[0] + m[2] for m in maps])))
-    new_sources = []
-    for idx, next_idx in zip(idxs[:-1], idxs[1:]):
-        if source[0] <= idx < source[0] + source[1]:
-            new_sources.append((idx, next_idx - idx))
-    return new_sources
-
-def map_single_range(source: (int, int), maps: list[(int, int, int)]) -> (int, int):
+# split_value guarantees that if item_value[0] < map_item[0] then it is outside any map
+# and if item_value[0] is inside a map, then the entirety of the source uses that map
+def map_range(item_value: (int, int), maps: list[(int, int, int)]) -> (int, int):
     for map_item in maps:
-        if source[0] < map_item[0]:
-            return source
-        if map_item[0] <= source[0] < map_item[0] + map_item[2]:
-            return (map_item[1] + source[0] - map_item[0], source[1])
-    return source
+        if item_value[0] < map_item[0]:
+            return item_value
+        if map_item[0] <= item_value[0] < map_item[0] + map_item[2]:
+            return (map_item[1] + item_value[0] - map_item[0], item_value[1])
+    return item_value
 
-def map_range(source: (int, int), maps: list[(int, int, int)]) -> list[(int, int)]:
-    new_sources = get_new_sources(source, maps)
-    dests = []
-    for source in new_sources:
-        dests.append(map_single_range(source, maps))
-    return dests
+# Splits a value range into pieces at the boundaries of a list of maps
+def split_value(value: (int, int), maps: list[(int, int, int)]) -> list[(int, int)]:
+    idxs = sorted(list(set([value[0], value[0] + value[1]] + [m[0] + m[2] for m in maps])))
+    new_values = []
+    for idx, next_idx in zip(idxs[:-1], idxs[1:]):
+        if value[0] <= idx < value[0] + value[1]:
+            new_values.append((idx, next_idx - idx))
+    return new_values
+
+# Can consider all items at the same time, split by map boundary and map
+def get_min_value(item_values: list[(int, int)], all_maps: list[list[(int, int, int)]]) -> int:
+    for item_map in all_maps:
+        item_values = [map_range(single_value, item_map) for item_value in item_values
+                       for single_value in split_value(item_value, item_map)]
+    return min([a[0] for a in item_values])
 
 def run(test: bool) -> None:
     if not test:
@@ -87,22 +90,10 @@ humidity-to-location map:
     seeds, all_maps = format(raw_input)
 
     # part 1
-    values = [(s, 1) for s in seeds]
-    for item_map in all_maps:
-        new_values = []
-        for value in values:
-            new_values += map_range(value, item_map)
-        values = new_values
-    print(min([a[0] for a in values]))
+    print(get_min_value([(s, 1) for s in seeds], all_maps))
 
     # part 2
-    values = [seeds[i:i+2] for i in range(0, len(seeds), 2)]
-    for item_map in all_maps:
-        new_values = []
-        for value in values:
-            new_values += map_range(value, item_map)
-        values = new_values
-    print(min([a[0] for a in values]))
+    print(get_min_value([seeds[i:i+2] for i in range(0, len(seeds), 2)], all_maps))
 
 
 
