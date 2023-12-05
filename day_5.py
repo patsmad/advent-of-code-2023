@@ -21,14 +21,6 @@ def format(raw_input: str):
     maps = map(format_map, split_input[1:])
     return seeds, list(maps)
 
-def map_item(source: int, maps: list[(int, int, int)]) -> int:
-    for map_item in maps:
-        if source < map_item[0]:
-            return source
-        if map_item[0] <= source < map_item[0] + map_item[2]:
-            return map_item[1] + (source - map_item[0])
-    return source
-
 def get_new_sources(source: (int, int), maps: list[(int, int, int)]) -> list[(int, int)]:
     idxs = sorted(list(set([source[0], source[0] + source[1]] + [m[0] + m[2] for m in maps])))
     new_sources = []
@@ -95,31 +87,22 @@ humidity-to-location map:
     seeds, all_maps = format(raw_input)
 
     # part 1
-    min_value = None
-    for seed in seeds:
-        value = seed
-        for item_map in all_maps:
-            value = map_item(value, item_map)
-        if min_value is None or value < min_value:
-            min_value = value
-    print(min_value)
+    values = [(s, 1) for s in seeds]
+    for item_map in all_maps:
+        new_values = []
+        for value in values:
+            new_values += map_range(value, item_map)
+        values = new_values
+    print(min([a[0] for a in values]))
 
     # part 2
-    min_value = None
-    for start, l in [seeds[i:i+2] for i in range(0, len(seeds), 2)]:
-        values = [(start, l)]
-        print(values)
-        for item_map in all_maps:
-            new_values = []
-            for value in values:
-                new_values += map_range(value, item_map)
-            values = new_values
-            print(values)
-        print()
-        new_min_value = min([a[0] for a in values])
-        if min_value is None or new_min_value < min_value:
-            min_value = new_min_value
-    print(min_value)
+    values = [seeds[i:i+2] for i in range(0, len(seeds), 2)]
+    for item_map in all_maps:
+        new_values = []
+        for value in values:
+            new_values += map_range(value, item_map)
+        values = new_values
+    print(min([a[0] for a in values]))
 
 
 
