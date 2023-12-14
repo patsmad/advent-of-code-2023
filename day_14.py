@@ -96,13 +96,17 @@ def run(test: bool) -> None:
     # part 2
     grid = Grid(raw_input)
     cycle_strs = []
-    while grid.to_str() not in cycle_strs:
-        cycle_strs.append(grid.to_str())
+    scores = []
+    h = hash(grid.to_str())
+    while h not in cycle_strs:
+        cycle_strs.append(h)
+        scores.append(grid.score())
         grid.cycle()
-    cycle_strs.append(grid.to_str())
+        h = hash(grid.to_str())
+    cycle_strs.append(hash(grid.to_str()))
+    scores.append(grid.score())
     idx = cycle_strs.index(cycle_strs[-1])
-    final_grid = Grid(cycle_strs[(1000000000 - idx) % (len(cycle_strs) - idx - 1) + idx])
-    print(final_grid.score())
+    print(scores[(1000000000 - idx) % (len(cycle_strs) - idx - 1) + idx])
 
 
 if __name__ == '__main__':
