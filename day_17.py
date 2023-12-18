@@ -9,9 +9,9 @@ def day_num() -> int:
 day: int = day_num()
 
 dxs = {
-    'N': (1, 0),
+    'N': (-1, 0),
     'E': (0, 1),
-    'S': (-1, 0),
+    'S': (1, 0),
     'W': (0, -1)
 }
 
@@ -23,23 +23,57 @@ opposite = {
 }
 
 class Node:
-    def __init__(self, x, y, d, w):
+    def __init__(self, x, y, d, num, w):
         self.x = x
         self.y = y
         self.d = d
-        self.three_in_a_row = self.d[0] == self.d[1] and self.d[0] == self.d[2]
+        self.num = num
         self.w = w
         self.value = math.inf
 
-    def edges(self, m):
+    def edges(self, m, min_num, max_num):
         edges = []
         for dir in ['N', 'E', 'S', 'W']:
-            if dir != opposite[self.d[2]] and (not self.three_in_a_row or dir != self.d[2]):
+            if dir != opposite[self.d] and (self.num >= min_num or dir == self.d) and (self.num < max_num or dir != self.d):
                 new_x = self.x + dxs[dir][0]
                 new_y = self.y + dxs[dir][1]
                 if 0 <= new_x < m[0] and 0 <= new_y < m[1]:
-                    edges.append((self.d[1], self.d[2], dir, new_x, new_y))
+                    new_num = self.num + 1 if dir == self.d else 1
+                    edges.append((dir, new_num, new_x, new_y))
         return edges
+
+def get_ans(raw_input, min_num, max_num):
+    nodes = [list(map(int, line.strip())) for line in raw_input.strip().split('\n')]
+    m = (len(nodes), len(nodes[0]))
+
+    node_dict = {}
+    queue = [Node(0, 0, 'E', 0, nodes[0][0]), Node(0, 0, 'S', 0, nodes[0][0])]
+    for q in queue:
+        q.value = 0
+
+    out = {}
+    while 1:
+        queue = sorted(queue, key=lambda n: n.value)
+        node = queue.pop(0)
+        while (node.d, node.num, node.x, node.y) in out:
+            node = queue.pop(0)
+        if node.x == m[0] - 1 and node.y == m[1] - 1:
+            print(node.x, node.y, node.value, node.d, node.num)
+            if node.num >= min_num:
+                break
+        else:
+            for new_edge in node.edges(m, min_num, max_num):
+                if new_edge not in node_dict:
+                    d, num, i, j = new_edge
+                    node_dict[new_edge] = Node(i, j, d, num, nodes[i][j])
+                new_node = node_dict[new_edge]
+                if node.value + new_node.w < new_node.value:
+                    new_node.value = node.value + new_node.w
+                if new_node not in queue:
+                    queue.append(new_node)
+            out[(node.d, node.num, node.x, node.y)] = True
+        if len(out) % 20000 == 0:
+            print(len(out))
 
 
 def run(test: bool) -> None:
@@ -62,43 +96,11 @@ def run(test: bool) -> None:
         4322674655533
         """.strip()
 
-    nodes = [list(map(int, line.strip())) for line in raw_input.strip().split('\n')]
-    m = (len(nodes), len(nodes[0]))
-
-    node_dict = {}
-    queue = []
-    for i in range(len(nodes)):
-        for j in range(len(nodes[i])):
-            for d1 in ['N', 'E', 'S', 'W']:
-                for d2 in ['N', 'E', 'S', 'W']:
-                    for d3 in ['N', 'E', 'S', 'W']:
-                        n = Node(i, j, (d1, d2, d3), nodes[i][j])
-                        node_dict[(d1, d2, d3, i, j)] = n
-                        if i == 0 and j == 0:
-                            queue.append(n)
-                            n.value = 0
-
     # part 1
-    out = {}
-    while 1:
-        queue = sorted(queue, key=lambda n: n.value)
-        node = queue.pop(0)
-        while (node.d[0], node.d[1], node.d[2], node.x, node.y) in out:
-            node = queue.pop(0)
-        if node.x == m[0] - 1 and node.y == m[1] - 1:
-            print(node.x, node.y, node.value)
-            break
-        for new_edge in node.edges(m):
-            new_node = node_dict[new_edge]
-            if node.value + new_node.w < new_node.value:
-                new_node.value = node.value + new_node.w
-            if new_node not in queue:
-                queue.append(new_node)
-        out[(node.d[0], node.d[1], node.d[2], node.x, node.y)] = True
-        print(len(out))
-
+    get_ans(raw_input, 0, 3)
 
     # part 2
+    get_ans(raw_input, 4, 10)
 
 if __name__ == '__main__':
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
